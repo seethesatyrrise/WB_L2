@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 )
@@ -16,7 +18,26 @@ type anagrams struct {
 func main() {
 	a := mapAnagrams([]string{"пятак", "сорт", "столик", "ток",
 		"листок", "рост", "ватка", "тяпка", "торс", "кот", "пятка", "трос", "слиток"})
-	fmt.Println(a.findAnagrams("Рост"))
+	for {
+		fmt.Print("введите слово:\n> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		input := scanner.Text()
+		words := a.findAnagrams(input)
+		if words == nil {
+			fmt.Println("в словаре анаграмм не найдено")
+			continue
+		}
+		fmt.Println("найденные анаграммы:")
+		for i, word := range words {
+			fmt.Print(word)
+			if i < len(words)-1 {
+				fmt.Print(", ")
+			}
+		}
+		fmt.Println()
+	}
+
 }
 
 // наполнение мапы анаграммами
