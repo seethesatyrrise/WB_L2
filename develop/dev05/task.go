@@ -26,9 +26,18 @@ type text struct {
 }
 
 func main() {
-	com := "grep -A1 -v -c -n '.*-r-.*' test"
-	err := grepFile(com)
-	fmt.Println(err)
+	fmt.Println("input command in format: grep [options]... regexp filename\n" +
+		"example: grep -A1 -v -c -n '.*-r-.*' test")
+	for {
+		fmt.Print("> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		com := scanner.Text()
+		err := grepFile(com)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 // запуск фильтрации
@@ -252,5 +261,6 @@ func (t *text) saveInFile(name string) error {
 		}
 	}
 
+	fmt.Println("result saved in file grep_" + name)
 	return nil
 }
