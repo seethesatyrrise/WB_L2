@@ -22,22 +22,22 @@ type text struct {
 }
 
 func main() {
-
-	//com := "cut -d \";\" -s -f 1,2"
-	//com := "cut -f 2,3 -d \";\" -s"
-	err := cut()
-	if err != nil {
-		fmt.Println(err)
+	fmt.Println("input command in format: cut [options]...\n" +
+		"example: cut -f 2,3 -d \";\" -s")
+	for {
+		fmt.Print("> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		com := scanner.Text()
+		err := cut(com)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 }
 
-func cut() error {
-	fmt.Println("введите команду в формате \"cut [options]...\"")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	com := scanner.Text()
-
+func cut(com string) error {
 	params, err := parseCommand(com)
 	if err != nil {
 		return err
