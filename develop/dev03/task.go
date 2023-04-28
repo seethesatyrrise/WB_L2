@@ -22,9 +22,18 @@ type text struct {
 }
 
 func main() {
-	com := "sort ls -M"
-	err := sortFile(com)
-	fmt.Println(err)
+	fmt.Println("input command in format: sort filename [options]...\n" +
+		"example: sort ls -r -u -b -c")
+	for {
+		fmt.Print("> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		com := scanner.Text()
+		err := sortFile(com)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 func sortFile(com string) error {
@@ -94,6 +103,25 @@ func parseCommand(com string) (*command, error) {
 		filename:   w[1],
 		parameters: params,
 	}, nil
+}
+
+func getParameters(in []string) map[uint8]int {
+	params := make(map[uint8]int)
+	for _, p := range in {
+		if p[0] != '-' {
+			continue
+		}
+		if len(p) > 2 {
+			num, err := strconv.Atoi(p[2:])
+			if err != nil {
+				num = 0
+			}
+			params[p[1]] = num
+			continue
+		}
+		params[p[1]] = 0
+	}
+	return params
 }
 
 func getLines(name string) ([]string, error) {
@@ -259,24 +287,6 @@ func (t *text) saveInFile(name string) error {
 		}
 	}
 
+	fmt.Println("result saved in file sorted_" + name)
 	return nil
-}
-
-func getParameters(in []string) map[uint8]int {
-	params := make(map[uint8]int)
-	for _, p := range in {
-		if p[0] != '-' {
-			continue
-		}
-		if len(p) > 2 {
-			num, err := strconv.Atoi(p[2:])
-			if err != nil {
-				num = 0
-			}
-			params[p[1]] = num
-			continue
-		}
-		params[p[1]] = 0
-	}
-	return params
 }
