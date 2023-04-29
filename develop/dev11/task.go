@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -16,7 +14,6 @@ type calendar struct {
 
 type event struct {
 	date    string
-	month   string
 	text    string
 	textOld string
 }
@@ -33,12 +30,12 @@ type DayEventsModel struct {
 func main() {
 	c := &calendar{days: make(map[string]map[string]struct{})}
 
-	http.HandleFunc("/create_event", c.createEvent)
-	http.HandleFunc("/update_event", c.updateEvent)
-	http.HandleFunc("/delete_event", c.deleteEvent)
-	http.HandleFunc("/events_for_day", c.getEventsForDay)
-	http.HandleFunc("/events_for_week", c.getEventsForWeek)
-	http.HandleFunc("/events_for_month", c.getEventsForMonth)
+	http.HandleFunc("/create_event", c.modifyEvent)
+	http.HandleFunc("/update_event", c.modifyEvent)
+	http.HandleFunc("/delete_event", c.modifyEvent)
+	http.HandleFunc("/events_for_day", c.getEvents)
+	http.HandleFunc("/events_for_week", c.getEvents)
+	http.HandleFunc("/events_for_month", c.getEvents)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -50,7 +47,7 @@ func parseRequest(req *http.Request) *event {
 		e.date = keys["date"][0]
 	}
 	if keys["month"] != nil {
-		e.month = keys["month"][0]
+		e.date = keys["month"][0]
 	}
 	if keys["textOld"] != nil {
 		e.textOld = keys["textOld"][0]
@@ -61,205 +58,158 @@ func parseRequest(req *http.Request) *event {
 	return e
 }
 
-func (c *calendar) createEvent(w http.ResponseWriter, req *http.Request) {
+func (c *calendar) modifyEvent(w http.ResponseWriter, req *http.Request) {
 	e := parseRequest(req)
-	err := c.create(e)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
+	var err int
+	var response string
+	switch req.URL.Path[1:] {
+	case "create_event":
+		err = c.create(e)
+		response = "event " + e.text + " was created\n"
+	case "delete_event":
+		err = c.delete(e)
+		response = "event " + e.text + " was deleted\n"
+	case "update_event":
+		err = c.update(e)
+		response = "event " + e.textOld + " was updated to " + e.text + "\n"
+	default:
+		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
-	io.WriteString(w, "created!\n")
+	if err != 0 {
+		w.WriteHeader(err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, response)
 }
 
-func (c *calendar) create(e *event) error {
+func (c *calendar) create(e *event) int {
 	if e.date == "" || e.text == "" {
-		return errors.New("wrong args")
+		return http.StatusBadRequest
 	}
 	if c.days[e.date] == nil {
 		c.days[e.date] = make(map[string]struct{})
 	}
 	c.days[e.date][e.text] = struct{}{}
-	return nil
+	return 0
 }
 
-func (c *calendar) updateEvent(w http.ResponseWriter, req *http.Request) {
-	e := parseRequest(req)
-	err := c.update(e)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	io.WriteString(w, "updated!\n")
-}
-
-func (c *calendar) update(e *event) error {
+func (c *calendar) update(e *event) int {
 	if e.date == "" || e.text == "" || e.textOld == "" {
-		return errors.New("wrong args")
+		return http.StatusBadRequest
 	}
 	_, ok := c.days[e.date][e.textOld]
 	if !ok {
-		return errors.New("can't find event " + e.textOld)
+		return http.StatusBadRequest
 	}
 	delete(c.days[e.date], e.textOld)
 	c.days[e.date][e.text] = struct{}{}
-	return nil
+	return 0
 }
 
-func (c *calendar) deleteEvent(w http.ResponseWriter, req *http.Request) {
-	e := parseRequest(req)
-	err := c.delete(e)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	io.WriteString(w, "event deleted!\n")
-}
-
-func (c *calendar) delete(e *event) error {
+func (c *calendar) delete(e *event) int {
 	if e.date == "" || e.text == "" {
-		return errors.New("wrong args")
+		return http.StatusBadRequest
 	}
 	_, ok := c.days[e.date][e.text]
 	if !ok {
-		return errors.New("can't find event " + e.text)
+		return http.StatusBadRequest
 	}
 	delete(c.days[e.date], e.text)
-	return nil
+	return 0
 }
 
-func (c *calendar) getEventsForDay(w http.ResponseWriter, req *http.Request) {
+func (c *calendar) getEvents(w http.ResponseWriter, req *http.Request) {
 	e := parseRequest(req)
-	events, err := c.dayEvents(e.date)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
+	events := &getEventsModel{}
+
+	var err int
+	switch req.URL.Path[1:] {
+	case "events_for_day":
+		events, err = c.gatherEvents("day", e.date)
+	case "events_for_week":
+		events, err = c.gatherEvents("week", e.date)
+	case "events_for_month":
+		events, err = c.gatherEvents("month", e.date)
+	default:
+		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
-	res := getEventsModel{Result: []DayEventsModel{*events}}
-	eventsJSON, err := json.Marshal(res)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
+	if err != 0 {
+		w.WriteHeader(err)
+		return
+	}
+	eventsJSON, errJSON := json.Marshal(events)
+	if errJSON != nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
 	w.Write(eventsJSON)
 }
 
-func (c *calendar) dayEvents(date string) (*DayEventsModel, error) {
+func (c *calendar) gatherEvents(howMuch, startDay string) (*getEventsModel, int) {
+	model := &getEventsModel{Result: []DayEventsModel{}}
+	var date, tillDay time.Time
+	var err int
+
+	switch howMuch {
+	case "day":
+		date, err = dayToTime(startDay)
+		tillDay = date.AddDate(0, 0, 1)
+	case "week":
+		date, err = dayToTime(startDay)
+		tillDay = date.AddDate(0, 0, 7)
+	case "month":
+		date, err = monthToTime(startDay)
+		tillDay = date.AddDate(0, 1, 0)
+	default:
+		return nil, http.StatusServiceUnavailable
+	}
+	if err != 0 {
+		return nil, http.StatusBadRequest
+	}
+
+	for ; date.Before(tillDay); date = date.AddDate(0, 0, 1) {
+		thisDay := timeToDay(date)
+		events := c.dayEvents(thisDay)
+		if events != nil {
+			model.Result = append(model.Result, *events)
+		}
+	}
+
+	return model, 0
+}
+
+func (c *calendar) dayEvents(date string) *DayEventsModel {
 	events, ok := c.days[date]
 	if !ok || len(events) == 0 {
-		return nil, errors.New("can't find events for day " + date)
+		return nil
 	}
-	res := ""
+	allEvents := ""
 	for text := range events {
-		res = res + ", " + text
+		allEvents = allEvents + ", " + text
 	}
-	return &DayEventsModel{Date: date, Events: res[2:]}, nil
+	return &DayEventsModel{Date: date, Events: allEvents[2:]}
 }
 
-func (c *calendar) getEventsForWeek(w http.ResponseWriter, req *http.Request) {
-	e := parseRequest(req)
-	events, err := c.weekEvents(e.date)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	eventsJSON, err := json.Marshal(events)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	w.Write(eventsJSON)
-}
-
-func (c *calendar) weekEvents(date string) (*getEventsModel, error) {
-	model := &getEventsModel{Result: []DayEventsModel{}}
-	day, err := dayToTime(date)
-	if err != nil {
-		return nil, err
-	}
-	nextWeek := day.AddDate(0, 0, 7)
-
-	for ; day.Before(nextWeek); day = day.AddDate(0, 0, 1) {
-		date = timeToDay(day)
-		events, ok := c.days[date]
-		if !ok || len(events) == 0 {
-			continue
-		}
-		res := ""
-		for text := range events {
-			res = res + ", " + text
-		}
-		model.Result = append(model.Result, DayEventsModel{Date: date, Events: res[2:]})
-
-	}
-
-	return model, nil
-}
-
-func dayToTime(date string) (time.Time, error) {
+func dayToTime(date string) (time.Time, int) {
 	dateTimed, err := time.Parse("2006-01-02", date)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, http.StatusBadRequest
 	}
-	return dateTimed, nil
+	return dateTimed, 0
 }
 
-func monthToTime(month string) (time.Time, error) {
+func monthToTime(month string) (time.Time, int) {
 	dateTimed, err := time.Parse("2006-01", month)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, http.StatusBadRequest
 	}
-	return dateTimed, nil
+	return dateTimed, 0
 }
 
 func timeToDay(day time.Time) string {
 	date := day.Format("2006-01-02")
 	return date
-}
-
-func (c *calendar) getEventsForMonth(w http.ResponseWriter, req *http.Request) {
-	e := parseRequest(req)
-	events, err := c.monthEvents(e.month)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	eventsJSON, err := json.Marshal(events)
-	if err != nil {
-		fmt.Println(err)
-		io.WriteString(w, "error\n")
-		return
-	}
-	w.Write(eventsJSON)
-}
-
-func (c *calendar) monthEvents(month string) (*getEventsModel, error) {
-	model := &getEventsModel{Result: []DayEventsModel{}}
-	day, err := monthToTime(month)
-	if err != nil {
-		return nil, err
-	}
-	nextMonth := day.AddDate(0, 1, 0)
-
-	for ; day.Before(nextMonth); day = day.AddDate(0, 0, 1) {
-		date := timeToDay(day)
-		events, ok := c.days[date]
-		if !ok || len(events) == 0 {
-			continue
-		}
-		res := ""
-		for text := range events {
-			res = res + ", " + text
-		}
-		model.Result = append(model.Result, DayEventsModel{Date: date, Events: res[2:]})
-	}
-
-	return model, nil
 }
