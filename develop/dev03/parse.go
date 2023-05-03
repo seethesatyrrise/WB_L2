@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// парсинг команды
 func parseCommand(com string) (string, map[uint8]int, bool, error) {
 	w := strings.Fields(com)
 
@@ -31,6 +32,7 @@ func parseCommand(com string) (string, map[uint8]int, bool, error) {
 	return w[1], parameters, false, nil
 }
 
+// парсинг параметров
 func getParameters(in []string) map[uint8]int {
 	parameters := make(map[uint8]int)
 
@@ -50,4 +52,3 @@ func getParameters(in []string) map[uint8]int {
 	}
 	return parameters
 }
-

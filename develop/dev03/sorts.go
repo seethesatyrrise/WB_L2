@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// запуск сортировок в соответствии с переданными параметрами
 func (t *text) sortFile(parameters map[uint8]int) error {
 
 	if _, ok := parameters['b']; ok {
@@ -45,31 +46,37 @@ func (t *text) sortFile(parameters map[uint8]int) error {
 	return nil
 }
 
+// обычная сортировка
 func (t *text) sortLines() {
 	sort.Strings(t.lines)
 }
 
+// сортировка по столбцу
 func (t *text) sortByColumn(k int) {
 	sort.Slice(t.lines, func(i, j int) bool {
 		iWords := strings.Fields(t.lines[i])
 		jWords := strings.Fields(t.lines[j])
+
 		if len(iWords) <= k {
 			return true
 		}
 		if len(jWords) <= k {
 			return false
 		}
-		fmt.Println(iWords[k], jWords[k])
+
 		return iWords[k] < jWords[k]
 	})
 }
 
+// сортировка по названию месяца
 func (t *text) sortByMonth() {
 	months := []string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 	lineMonths := make([]int, len(t.lines))
+
 	for i, line := range t.lines {
 		lineMonths[i] = searchMonth(line, months)
 	}
+
 	sort.Slice(t.lines, func(i, j int) bool {
 		iMonth := lineMonths[i]
 		if iMonth == -1 {
@@ -83,11 +90,14 @@ func (t *text) sortByMonth() {
 	})
 }
 
+// сортировка по числовому значению
 func (t *text) sortNumerically() {
 	nums := make([]float64, len(t.lines))
+
 	for i, line := range t.lines {
 		nums[i] = getNumber(line)
 	}
+
 	sort.Slice(t.lines, func(i, j int) bool {
 		iNum := nums[i]
 		if iNum == 0 {

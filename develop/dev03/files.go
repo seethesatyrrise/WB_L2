@@ -11,6 +11,7 @@ type text struct {
 	lines []string
 }
 
+// считывание строк из файла
 func getLines(name string) ([]string, error) {
 	text := []string{}
 	file, err := os.Open("develop\\dev03\\texts\\" + name)
@@ -32,6 +33,7 @@ func getLines(name string) ([]string, error) {
 	return text, nil
 }
 
+// сохранение в файл
 func (t *text) saveInFile(name string) error {
 	file, err := os.Create("develop\\dev03\\texts\\sorted_" + name)
 	defer file.Close()

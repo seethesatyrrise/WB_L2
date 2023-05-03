@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// поиск названий месяцев в строке
 func searchMonth(s string, months []string) int {
 	for i, month := range months {
 		if strings.Contains(s, month) {
@@ -16,6 +17,7 @@ func searchMonth(s string, months []string) int {
 	return -1
 }
 
+// получение числового значения строки
 func getNumber(line string) float64 {
 	num := 0.0
 	gotPoint := false
@@ -36,6 +38,7 @@ func getNumber(line string) float64 {
 	return num
 }
 
+// перевернуть строки
 func (t *text) reverse() {
 	tLen := len(t.lines) - 1
 	for i := 0; i <= tLen/2; i++ {
@@ -43,10 +46,12 @@ func (t *text) reverse() {
 	}
 }
 
+// определить, отсортированы ли строки
 func (t *text) isSorted() bool {
 	return sort.StringsAreSorted(t.lines)
 }
 
+// удаление повторяющихся строк
 func (t *text) removeDuplicates() {
 	m := make(map[string]struct{})
 	for i, line := range t.lines {
@@ -57,24 +62,19 @@ func (t *text) removeDuplicates() {
 	}
 }
 
+// удаление строки
 func (t *text) removeLine(i int) {
 	t.lines = append(t.lines[:i], t.lines[i+1:]...)
 }
 
+// удаление хвостовых пробелов
 func (t *text) removeTailSpaces() {
-	spaces := 0
 	for i, line := range t.lines {
-		for i := len(line) - 1; i >= 0; i-- {
-			if line[i] == ' ' {
-				spaces++
-			} else {
-				break
-			}
-		}
-		t.lines[i] = t.lines[i][:len(line)-spaces]
+		t.lines[i] = strings.TrimRight(line, " ")
 	}
 }
 
+// вывод описания параметров
 func getHelp() {
 	fmt.Println(
 		"-k — указание колонки для сортировки (слова в строке " +
