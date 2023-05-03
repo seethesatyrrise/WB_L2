@@ -23,18 +23,23 @@ func main() {
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
 		input := scanner.Text()
+
 		words := a.findAnagrams(input)
+
 		if words == nil {
 			fmt.Println("в словаре анаграмм не найдено")
 			continue
 		}
+
 		fmt.Println("найденные анаграммы:")
+
 		for i, word := range words {
 			fmt.Print(word)
 			if i < len(words)-1 {
 				fmt.Print(", ")
 			}
 		}
+
 		fmt.Println()
 	}
 
@@ -43,6 +48,7 @@ func main() {
 // наполнение мапы анаграммами
 func mapAnagrams(words []string) *anagrams {
 	aMap := &anagrams{words: make(map[string][]string), aux: make(map[string]string)}
+
 	for _, wordStr := range words {
 		wordStr = strings.ToLower(wordStr)
 		wordSorted := sortRunes([]rune(wordStr))
@@ -53,6 +59,7 @@ func mapAnagrams(words []string) *anagrams {
 		}
 		aMap.insertWord(mKey, wordStr)
 	}
+
 	aMap.deleteSingles()
 	return aMap
 }
@@ -63,6 +70,7 @@ func (aMap *anagrams) insertWord(key string, word string) {
 	if found {
 		return
 	}
+
 	if len(words) == 0 || len(words) == i {
 		words = append(words, word)
 	} else {
@@ -72,6 +80,7 @@ func (aMap *anagrams) insertWord(key string, word string) {
 		tmp = append(tmp, words[i:]...)
 		words = tmp
 	}
+
 	aMap.words[key] = words
 }
 
