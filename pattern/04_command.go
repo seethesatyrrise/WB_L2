@@ -137,7 +137,7 @@ func (com *VolumeCommand) Undo() {
 	com.volume.DropLevel()
 }
 
-// MultiPult -инициатор команд - вызывает команду для выполнения определенного запроса
+// MultiPult - инициатор команд - вызывает команду для выполнения определенного запроса
 type MultiPult struct {
 	buttons         []ICommand
 	commandsHistory *utils.Stack
