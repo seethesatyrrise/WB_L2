@@ -33,6 +33,9 @@ package pattern
 
 import "fmt"
 
+// У нас есть два типа работников - Developer и Director. Их зарплаты рассчитываются по-разному.
+// Visitor определяет интерфейс для расчета их заработка.
+
 // Employee - определяет метод Accept(), в котором в качестве параметра принимается объект Visitor
 type Employee interface {
 	FullName()
