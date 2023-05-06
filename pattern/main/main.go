@@ -20,5 +20,8 @@ func main() {
 	//pattern.DemonstrateChainOfResp()
 
 	// Factory Method - Фабричный Метод
-	pattern.DemonstrateFactoryMethod()
+	//pattern.DemonstrateFactoryMethod()
+
+	// Strategy - Стратегия
+	pattern.DemonstrateStrategy()
 }
