@@ -3,11 +3,19 @@ package main
 import "WB-L2/pattern"
 
 func main() {
-	demonstrateFacade()
-}
 
-func demonstrateFacade() {
-	f := pattern.NewFacade()
-	f.Operation1()
-	f.Operation2()
+	// Facade - Фасад
+	//pattern.DemonstrateFacade()
+
+	// Builder - Строитель
+	//pattern.DemonstrateBuilder()
+
+	// Visitor - Посетитель
+	//pattern.DemonstrateVisitor()
+
+	// Command - Команда
+	//pattern.DemonstrateCommand()
+
+	// Chain of Responsibility - Цепочка Обязанностей
+	pattern.DemonstrateChainOfResp()
 }
