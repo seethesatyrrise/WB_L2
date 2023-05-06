@@ -1,15 +1,15 @@
 //
-// Паттерн «Фасад» предоставляет унифицированный интерфейс вместо набора интерфейсов
+// Паттерн "Фасад" предоставляет унифицированный интерфейс вместо набора интерфейсов
 // некоторой подсистемы. Фасад определяет интерфейс более высокого уровня, который
 // упрощает использование подсистемы.
 //
-// Паттер "Фасад" используют когда:
-// - Когда имеется сложная система, и необходимо упростить с ней работу.
+// Паттер "Фасад" используют, когда:
+// - Имеется сложная система, и необходимо упростить с ней работу.
 // Фасад позволит определить одну точку взаимодействия между клиентом и системой.
-// - Когда надо уменьшить количество зависимостей между клиентом и сложной системой.
+// - Надо уменьшить количество зависимостей между клиентом и сложной системой.
 // Фасадные объекты позволяют отделить, изолировать компоненты системы от клиента и
 // развивать и работать с ними независимо.
-// - Когда нужно определить подсистемы компонентов в сложной системе. Создание фасадов
+// - Нужно определить подсистемы компонентов в сложной системе. Создание фасадов
 // для компонентов каждой отдельной подсистемы позволит упростить взаимодействие
 // между ними и повысить их независимость друг от друга.
 //
@@ -24,47 +24,58 @@ package pattern
 
 import "fmt"
 
-type subsystemA struct{}
+// Классы SubsystemA, SubsystemB, SubsystemC и т.д. являются компонентами
+// сложной подсистемы, с которыми должен взаимодействовать клиент
 
-func (s *subsystemA) A1() string {
+type SubsystemA struct{}
+
+func (s *SubsystemA) A1() string {
 	return "Subsystem A, Method A1\n"
 }
 
-func (s *subsystemA) A2() string {
+func (s *SubsystemA) A2() string {
 	return "Subsystem A, Method A2\n"
 }
 
-type subsystemB struct{}
+type SubsystemB struct{}
 
-func (s *subsystemB) B1() string {
+func (s *SubsystemB) B1() string {
 	return "Subsystem B, Method B1\n"
 }
 
-type subsystemC struct{}
+type SubsystemC struct{}
 
-func (s *subsystemC) C1() string {
+func (s *SubsystemC) C1() string {
 	return "Subsystem C, Method C1\n"
 }
 
-type facade struct {
-	a *subsystemA
-	b *subsystemB
-	c *subsystemC
+// Facade - непосредственно фасад, который предоставляет
+// интерфейс клиенту для работы с компонентами
+type Facade struct {
+	a *SubsystemA
+	b *SubsystemB
+	c *SubsystemC
 }
 
-func (f *facade) Operation1() {
+func (f *Facade) Operation1() {
 	fmt.Println("Operation 1\n" +
 		f.a.A1() +
 		f.a.A2() +
 		f.b.B1())
 }
 
-func (f *facade) Operation2() {
+func (f *Facade) Operation2() {
 	fmt.Println("Operation 2\n" +
 		f.b.B1() +
 		f.c.C1())
 }
 
-func NewFacade() *facade {
-	return &facade{a: &subsystemA{}, b: &subsystemB{}, c: &subsystemC{}}
+func NewFacade() *Facade {
+	return &Facade{a: &SubsystemA{}, b: &SubsystemB{}, c: &SubsystemC{}}
+}
+
+func DemonstrateFacade() {
+	f := NewFacade()
+	f.Operation1()
+	f.Operation2()
 }
