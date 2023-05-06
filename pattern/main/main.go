@@ -17,5 +17,8 @@ func main() {
 	//pattern.DemonstrateCommand()
 
 	// Chain of Responsibility - Цепочка Обязанностей
-	pattern.DemonstrateChainOfResp()
+	//pattern.DemonstrateChainOfResp()
+
+	// Factory Method - Фабричный Метод
+	pattern.DemonstrateFactoryMethod()
 }
