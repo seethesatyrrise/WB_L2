@@ -1,6 +1,6 @@
-package main
+package models
 
-type getEventsModel struct {
+type GetEventsModel struct {
 	Result []DayEventsModel `json:"result"`
 }
 
@@ -9,10 +9,10 @@ type DayEventsModel struct {
 	Events string `json:"events"`
 }
 
-type errorModel struct {
+type ErrorModel struct {
 	Err string `json:"error"`
 }
 
-type responseModel struct {
+type ResponseModel struct {
 	Resp string `json:"result"`
 }

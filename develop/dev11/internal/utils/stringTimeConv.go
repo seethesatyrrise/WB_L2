@@ -1,11 +1,11 @@
-package main
+package utils
 
 import (
 	"net/http"
 	"time"
 )
 
-func dayToTime(date string) (time.Time, int, error) {
+func DayToTime(date string) (time.Time, int, error) {
 	dateTimed, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return time.Time{}, http.StatusBadRequest, err
@@ -13,7 +13,7 @@ func dayToTime(date string) (time.Time, int, error) {
 	return dateTimed, http.StatusOK, nil
 }
 
-func monthToTime(month string) (time.Time, int, error) {
+func MonthToTime(month string) (time.Time, int, error) {
 	dateTimed, err := time.Parse("2006-01", month)
 	if err != nil {
 		return time.Time{}, http.StatusBadRequest, err
@@ -21,7 +21,7 @@ func monthToTime(month string) (time.Time, int, error) {
 	return dateTimed, http.StatusOK, nil
 }
 
-func timeToDay(day time.Time) string {
+func TimeToDay(day time.Time) string {
 	date := day.Format("2006-01-02")
 	return date
 }
