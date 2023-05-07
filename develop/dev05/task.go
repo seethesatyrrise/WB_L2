@@ -9,7 +9,7 @@ import (
 func main() {
 	fmt.Println("input command in format: grep [options]... regexp filename\n" +
 		"example: grep -A1 -v -c -n '.*-r-.*' test\n" +
-		"\"type \"grep --help\" for list of options\"")
+		"\"type \"grep --help\" for options list\"")
 
 	for {
 		fmt.Print("> ")
