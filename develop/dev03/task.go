@@ -10,7 +10,8 @@ func main() {
 	fmt.Println("type command in format: sort filename [options]...\n" +
 		"example: sort ls -r -u -b -c\n" +
 		"file must be in folder \"texts\"\n" +
-		"type \"sort --help\" for list of options")
+		"type \"sort --help\" for options list")
+
 	for {
 		fmt.Print("> ")
 		scanner := bufio.NewScanner(os.Stdin)
