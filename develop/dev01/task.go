@@ -1,17 +1,14 @@
-package gettime
+package main
 
 import (
-	"fmt"
-	"github.com/beevik/ntp"
+	"os"
+	"task/gettime"
 )
 
-// Программа должна корректно обрабатывать ошибки библиотеки: выводить их в STDERR и возвращать ненулевой код выхода в OS
-func GetTime() int {
-	time, err := ntp.Time("0.beevik-ntp.pool.ntp.org")
-	if err != nil {
-		fmt.Errorf(err.Error())
-		return 1
-	}
-	fmt.Println(time)
-	return 0
+func main() {
+	errCode := 0
+	defer func() {
+		os.Exit(errCode)
+	}()
+	errCode = gettime.GetTime()
 }
