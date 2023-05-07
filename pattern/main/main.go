@@ -23,5 +23,8 @@ func main() {
 	//pattern.DemonstrateFactoryMethod()
 
 	// Strategy - Стратегия
-	pattern.DemonstrateStrategy()
+	//pattern.DemonstrateStrategy()
+
+	// State - Состояние
+	pattern.DemonstrateState()
 }
